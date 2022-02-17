@@ -7,31 +7,32 @@
   const c = (elemento)=> document.querySelector(elemento); // No c ira retornar apenas o item
 
       //Vamos criar a mesma ideia para o 'querySelectorAll'
-  const cs = (elemento)=> document.querySelectorAll(elemento); // No cs ira retornar um array com os itens que ele encontrou             
-      
+  const cs = (elemento)=> document.querySelectorAll(elemento); // No cs ira retornar um array com os itens que ele encontrou   
+
+     //                                                    LISTAGEM DAS PIZZAS
   //Criamos uma função auxiliar que iremos passar o elemento que queremos selecionar, retornando o mesmo para nos, para diminuir a quantidade de codigo.
-  pizzaJson.map((item, index)=>{
+    pizzaJson.map((item, index)=>{
       // para clonar um item usamos o "cloneNode" com o parametro 'true', porque ele vai pegar não so o proprio item, mas tudo que tem dentro dele.
-  let pizzaItem = c('.models .pizza-item').cloneNode(true);
+    let pizzaItem = c('.models .pizza-item').cloneNode(true);
       //preencher as informações em 'pizzaItem' e depois adicionar na tela na seção que criamos para listar as pizza no html (pizza-area).
 
       //Dentro de pizzaItem, vamos localizar a div .class que vamos inserir as informações do nome da pizza (pizza-item--name)
       //O 'item.name' e o nosso arquivo json com a listagem dos nomes das pizza, entao essas informações serao atribuidas a 'pizzaItem'.
-  pizzaItem.querySelector('.pizza-item--name').innerHTML = item.name;   
+    pizzaItem.querySelector('.pizza-item--name').innerHTML = item.name;   
       //Para descrição iremos seguir os mesmos passos que usamos para inserir os nome das pizzas acima, buscando no arquivo Json o 'nó' que tem a descrição do nosso item
-  pizzaItem.querySelector('.pizza-item--desc').innerHTML = item.description;
+    pizzaItem.querySelector('.pizza-item--desc').innerHTML = item.description;
       //No caso do preço vamos usar o 'template String' devido a formatação do elemento ter R$ e casas decimais, ajustando com '.toFixed(2)' para ter duas casas depois da virgula em todos os itens
-  pizzaItem.querySelector('.pizza-item--price').innerHTML = `R$ ${item.price.toFixed(2)}`; 
+     pizzaItem.querySelector('.pizza-item--price').innerHTML = `R$ ${item.price.toFixed(2)}`; 
       //Para a imagem da pizza, vamos acessar o src="" que tem na nossa div class 'pizza-item-img', e inserir as imagens do nosso arquivo json nesse parametro src
       //como o src é um parametro da tag img, para ja acessarmos usando a ordem com querySelector '.pizza-item--img img'
-  pizzaItem.querySelector('.pizza-item--img img').src = item.img
+     pizzaItem.querySelector('.pizza-item--img img').src = item.img
       //Identificar a pizza selecionada que foi para o modal, usaremos o index para identificar qual obejto foi selecionado
       //Iremos atribuir com o nome de "data-key" por que quando colocamos algum atributo com alguma informação usamos esse prefixo "data" que sabemos que possui alguma informação especifica sobre div,item..
       //No segundo parametro vamos colocar o index para que seja atribuido a posição correta seguindo nossa lista json de cada item
-  pizzaItem.setAttribute('data-key', index);    
+    pizzaItem.setAttribute('data-key', index);    
       //Vamos adicionar um evento de clique na nossa tag 'a' no parametro href, para que ele abra o modal do carrinho de compras,quando o usuario clicar nele
       //Primeiro vamos bloquear a ação natural do clique na tag 'a' que é atualizar a tela ".preventDefault()" para que quando clicar nao atualize mais a tela para o usuario      
-  pizzaItem.querySelector('a').addEventListener('click', (evento)=>{
+     pizzaItem.querySelector('a').addEventListener('click', (evento)=>{
         evento.preventDefault();
       //Agora que temos setado com o setAttribute as nossas 'pizzaItem', com a posição de cada uma no indice.Vamos adicionar tambem ao modal, para que ele saiba qual pizza foi selecionada
       //Primeiro pegamos a informação e inseri-la em uma variavel. Começamos com 
@@ -78,6 +79,54 @@
       //O comando .append() serve para pegar o conteudo que ja tem em 'pizza-area' e vai adicionar mais um conteudo. Se usassemos o 'innerHTML' ele iria SUBSTITUIR o conteudo que temos em pizza-area
       //nao ADICIONAR sem sobrescrever como o '.append'
       //Dentro do append() mandamos como parametro o elemento que queremos adicionar, que no caso e pizza-item que clonamos anteriormente
-  c('.pizza-area').append(pizzaItem);
+    c('.pizza-area').append(pizzaItem);
       
-  });
+    });
+        //                                    FIM DA LISTAGEM DAS PIZZAS
+
+    //                                              EVENTOS DE FUNCIONAMENTO DO MODAL
+    //Criar uma função de fechamento do modal
+    function closeModal(){
+    //Vamos tirar a opacidade do modal para zero
+        c('.pizzaWindowArea').style.opacity = 0; 
+    //Agora vamos dar um prazo de meio segundo "500" com setTimeout, que é o prazo que a propriedade vai demorar para fazer efeito conforme foi //configurado no css(transition) para ae então alterarmos o display para none    
+        setTimeout(()=>{
+            c('.pizzaWindowArea').style.display = 'none';
+        },500);
+    };
+    //Uma vez que temos a função de fechar o modal, vamos adicionar esta função ao evento de click, buscando primeiro os botoes/divs de cancelar/fechar no HTML
+    //Vamos trazer a fução que criamos 'cs' porque é mais de um item
+    //ForEach para informar que em cada um deles, irei passar uma função, que no seu parametro ira receber como argumento o proprio item(botao///div) e adicionar um evento de click, que em seguida ira trazer a função que construimos de fechar a "closeModal"
+    cs('.pizzaInfo--cancelButton,.pizzaInfo--cancelMobileButton').forEach((item)=>{
+        item.addEventListener('click',closeModal);
+    });
+    //Vamos alterar a quantidade de itens no nosso modal, pegando os botões <button> que altera as quantidade no HTML, que no caso é o
+    //pizzaInfo--qtmenos' e '.pizzaInfo--qtmais'
+    c('.pizzaInfo--qtmenos').addEventListener('click', ()=>{
+    //Diferente de aumentar o valor da quantidade que parte do '1' e pode ir para 2,3,4,5...., para diminuir precisamos colocar um limite, se
+    // nao ele vai de 1 para 0,-1,-2,-3... vamos entao criar uma condição que nao deixe ficar menor do que 1
+    //  Se modalQt for maior que um, ae sim pode diminuir(decrementar) e apos isso atualizar a quantidade e inser no html com o innerHTML
+        if(modalQt > 1){
+            modalQt--;
+            c('.pizzaInfo--qt').innerHTML = modalQt; 
+        }        
+    });
+    //Quando clicar no botao de mais, ele tem que aumentar a variavel modalQT que criamos como parametro '1' pra mais(incrementar)
+    c('.pizzaInfo--qtmais').addEventListener('click', ()=>{
+    //Quando o usuario clicar no botao de mais, ele vai "acessar" o modalQt e incrementar o mesmo com mais '1'
+        modalQt++;
+    //Agora precisamos atualizar o modal, entao pra isso usamos a linha que usamos anteriormente para que ele "atualize" o incremento no modalQT
+        c('.pizzaInfo--qt').innerHTML = modalQt;    
+    });
+    //Vamos repetir a função que criamos mais acima que seleciona as tags de tamanho
+    cs('.pizzaInfo--size').forEach((size, sizeIndex)=>{
+    //Uma vez que temos os itens selecionados, vamos adicionar um evento de click e uma função
+        size.addEventListener('click', (item)=>{
+    //Quando queremos trocar a seleção de um item por outro, ou seja, quando so podemos ter um item selecionado, primeiro desmarcamos qualquer 
+    //item que esteja selecionado, e apos isso marcamos o que queremos selecionar
+      c('.pizzaInfo--size.selected').classList.remove('selected');
+    //Como todo esse processo ja é um loop que passa em cada um dos itens, vamos usar o proprio 'size', e apos isso adicionar a classe seleção 
+        size.classList.add('selected')      
+        })    
+    });
+
