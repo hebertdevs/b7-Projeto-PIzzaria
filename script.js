@@ -1,17 +1,21 @@
+    //Vamos criar uma variavel que sera um array do carrinho de compras, tudo que adicionarmos no nosso carrinho ira ir para este array
+        let cart = [];
+    //Variavel que vai armazenar qual item foi escolhida, vai ser configurada mais abaixo no codigo
+        let modalKey = 0;    
     //Vamos criar uma variavel, que ira armazenar a quantidade de itens que tem no modal 
-  let modalQt = 1;   
+        let modalQt = 1;   
     
       //Devido usarmos com frequencia o querySelector para selecionar elementos no html, vamos criar uma variavel com uma função que ira retornar o querySelector
       //Dessa forma apenas iremos chamar 'C' e passar o elemento que queremos que ele selecione, que o mesmo ira trazer para nos como argumento do parametro "elemento"
       //Usamos sem {} assim nao precisamos digitar o return dentro da função e diminuimos a quantidade de codigo
-  const c = (elemento)=> document.querySelector(elemento); // No c ira retornar apenas o item
+         const c = (elemento)=> document.querySelector(elemento); // No c ira retornar apenas o item
 
       //Vamos criar a mesma ideia para o 'querySelectorAll'
-  const cs = (elemento)=> document.querySelectorAll(elemento); // No cs ira retornar um array com os itens que ele encontrou   
+        const cs = (elemento)=> document.querySelectorAll(elemento); // No cs ira retornar um array com os itens que ele encontrou   
 
      //                                                    LISTAGEM DAS PIZZAS
-  //Criamos uma função auxiliar que iremos passar o elemento que queremos selecionar, retornando o mesmo para nos, para diminuir a quantidade de codigo.
-    pizzaJson.map((item, index)=>{
+    //Criamos uma função auxiliar que iremos passar o elemento que queremos selecionar, retornando o mesmo para nos, para diminuir a quantidade de codigo.
+pizzaJson.map((item, index)=>{
       // para clonar um item usamos o "cloneNode" com o parametro 'true', porque ele vai pegar não so o proprio item, mas tudo que tem dentro dele.
     let pizzaItem = c('.models .pizza-item').cloneNode(true);
       //preencher as informações em 'pizzaItem' e depois adicionar na tela na seção que criamos para listar as pizza no html (pizza-area).
@@ -41,6 +45,7 @@
       //Em seguida damos um .getAttribute('data-key') que ira trazer para nos a chave(posição) do item que foi clicado 
       let key = evento.target.closest('.pizza-item').getAttribute('data-key');
       let modalQt = 1; //Para que a quantidade de itens sempre começa com 1 
+          modalKey = key  // ira informar qual a pizza foi escolhida e guardar esta informação para usarmos na hora de adicionar ao carrinho
 
       //Uma vez que que temos acesso da pizza que foi clicada com [key] vamos atribuir ao modal seu nome,descrição.. igual fizemos na pagina home puxando do arquivo Json e expecificando a posição com 'key'
       c('.pizzaBig img').src = pizzaJson[key].img;
@@ -128,5 +133,24 @@
     //Como todo esse processo ja é um loop que passa em cada um dos itens, vamos usar o proprio 'size', e apos isso adicionar a classe seleção 
         size.classList.add('selected')      
         })    
+    });
+    //Função para adicionar itens ao carrinho, primeiro pegamos o botão no HTML "pizzaInfo--addButton", e adicionamos evento e uma função
+    c('.pizzaInfo--addButton').addEventListener('click', ()=>{
+        //precisamos reunir todas as informações que o usuario escolheu  qual a pizza, qual o tamanho selecionado e quantas pizzas são.
+        //Vamos pegar o tamanho, no nosso HTML as tag de size tem um data-key como atributo 0,1 e 2. Com isso saberemos qual tamanho foi selecionado
+        //Como o size vem como uma string para nos, vamos usar nesse caso o 'parseInt' para transforma-lo em um numero inteiro
+        let size = parseInt(c('.pizzaInfo--size.selected').getAttribute('data-key'));
+        //Vamos pegar o nosso array cart que criamos no inicio do codigo para adicionar itens ao carrinho, e usar o push() para adicionar propriedades e 
+        //transformar nosso array em um objeto com id,tamanho e quantidade
+        cart.push({
+        //No nosso arquivo pizzaJson vamos pegar a informação que temos na variavel criada anteriormente la em cima 'modalKey' que guarda qual pizza foi
+        // selecionada, o size ja pegamos anteriormente, agora so o insermos na array como objeto e a quantidade tambem ja esta na variavel modalQt    
+            id: pizzaJson[modalKey].id,
+            tamanho: size,
+            quantidade: modalQt
+
+        });
+    //Apos inserir no carrinho, temos que fechar o modal. Vamos utilizar a função que fizemos anteriormente de fechar o modal a 'closeModal()'
+    closeModal();    
     });
 
