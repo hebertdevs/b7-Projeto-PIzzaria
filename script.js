@@ -140,17 +140,82 @@ pizzaJson.map((item, index)=>{
         //Vamos pegar o tamanho, no nosso HTML as tag de size tem um data-key como atributo 0,1 e 2. Com isso saberemos qual tamanho foi selecionado
         //Como o size vem como uma string para nos, vamos usar nesse caso o 'parseInt' para transforma-lo em um numero inteiro
         let size = parseInt(c('.pizzaInfo--size.selected').getAttribute('data-key'));
+
+        //A mesma pizza, do mesmo tamanho ela tem que ficar junta. Vamos criar um identificador que traga a pizza e o tamanho, para que quando a quantidade for 2,3 da
+        // mesma pizza e tamanho ja tenhamos esta informação, so se for de tamanhos diferentes que vamos separar, o @ e apenas para separa os numeros no identificador
+        let identifier = pizzaJson[modalKey].id+'@'+size;
+
+        //Ants de dar o push, eu tenho que verificar se no carrinho eu ja tenho outro item com o mesmo identificador, porque se tiver, nao vamos dar um push, mas sim
+        //adicioanar a quantidade à mais naquele item que já tem.
+        //Vamos dar um findIndex no nosso array, que é o cart e vai procurar pelo identifier do item, e procurar qual tem o mesmo identifier do meu, se ele achar vai
+        //retornar o index dele, se não achar vai retornar -1
+        let key = cart.findIndex((item)=>item.identifier == identifier);
+        if(key > -1){
+                cart[key].quantidade += modalQt;
+        }else{
         //Vamos pegar o nosso array cart que criamos no inicio do codigo para adicionar itens ao carrinho, e usar o push() para adicionar propriedades e 
         //transformar nosso array em um objeto com id,tamanho e quantidade
-        cart.push({
+            cart.push({
         //No nosso arquivo pizzaJson vamos pegar a informação que temos na variavel criada anteriormente la em cima 'modalKey' que guarda qual pizza foi
-        // selecionada, o size ja pegamos anteriormente, agora so o insermos na array como objeto e a quantidade tambem ja esta na variavel modalQt    
-            id: pizzaJson[modalKey].id,
-            tamanho: size,
-            quantidade: modalQt
-
+        // selecionada, o size ja pegamos anteriormente, agora so o insermos na array como objeto e a quantidade tambem ja esta na variavel modalQt 
+                    identifier,
+                    id: pizzaJson[modalKey].id,
+                    size,
+                    quantidade: modalQt,
         });
+    }  
+    //Antes de fechar o carrinho ele vai atualizar o carrinho ativando nossa função criada mais abaixo
+    updateCart()
     //Apos inserir no carrinho, temos que fechar o modal. Vamos utilizar a função que fizemos anteriormente de fechar o modal a 'closeModal()'
     closeModal();    
     });
+    //Vamos criar uma função que ira Mostrar ou nao o carrinho caso ele tenha itens, e ela tambem vai preencher os itens no proprio carrinho, fazer o calculo de subtotal, de desconto, de total e mostrar essas informações na tela. 
+    function updateCart(){
+    //Caso eu tenha itens no meu carrinho, eu vou mostrar o carrinho, caso contrario eu vou tirar meu carrinho da tela.   
+        if(cart.length > 0){
+    //Pra mostrar o carrinho, vamos selecionar a tag no HTML <aside>,depois vamos pro classList dela e vamos adicionar uma class 'show', que ira fazer  a nossa estrutura HTML que criamos aparecer.   
+    c('aside').classList.add('show'); 
+    //Depois que mostrar, temos que zerar para que quando adicionarmos a mesma pizza com o '.append', ele nao adicione a mais a imagem no carrinho do mesmo produto,para isso usamos o innerHTML com = '' vazio.
+    c('.cart').innerHTML = '';
+    //Vamos fazer agora um for no carrinho, para pegarmos item a item para exibir na tela.
+    //Criamos a variavel 'i' para mapear nosso carrinho
+    for(let i in cart){
+    //Precisamos primeiro identificar a pizza, temos o 'id' dela, e achar as informações dela baseada nesse id.Vamos acessar o pizzaJson e procurar os itens que tem o mesmo id que nos temos 
+        let pizzaItem = pizzaJson.find((item)=>{
+    // O item.id vai ser igual o item do nosso carrinho ou seja o cart[i] para selecionar o item especifico do loop, e o '.id' que é o id do proprio carrinho.      
+            return item.id == cart[i].id;
+        });
+    //Agora que ja pegamos qual e o item, agora ja temos alguma das principais informações, entao vamos clonar a nossa <div> "cart-item" que esta dentro do "modals" no HTML,vamos preencher as informações e exibir
+    // na tela. Vamos começar pegando  o cart-item e dar um cloneNode para pegar todo mundo, e depois vamos exibir na tela dentro da div <aside>, na div 'cart' usando o '.append'
+    let cartItem = c('.models .cart--item').cloneNode(true);
+    //Vamos criar um 'switch' para informar o tamanho das pizzas no carrinho com Letras, trocando o numero index de tamanho, por letra para facilitar para nosso usuario, se nao ia ficar (0),(1).... 
+        let pizzaSizeName;
+            switch(cart[i].size){
+                case 0:
+                    pizzaSizeName = "P";
+                break;
+                case 1: 
+                    pizzaSizeName = "M";
+                break;
+                case 2:
+                    pizzaSizeName = "G";
+                break;    
+
+            }
+    //Inserimos o tamanho e nome na variavel, pois não temos uma div para tamanho, entao vamos concatenar nome e tamanho juntos no carrinho na variavel 'pizzaName' e depois inserila com .innerHTML 
+    // '.cart--item-nome'       
+        let pizzaName = `${pizzaItem.name} (${pizzaSizeName})`;
+    //No meio entre clonar e adicionar as informações nos temos que preencher as informações, primeiro vamos adicionar a imagem,depois o nome e em seguida a quantidade
+        cartItem.querySelector('img').src = pizzaItem.img;
+        cartItem.querySelector('.cart--item-nome').innerHTML = pizzaName;
+        cartItem.querySelector('.cart--item--qt').innerHTML = cart[i].quantidade;
+
+        c('.cart').append(cartItem);
+
+    }
+        }else{
+    //Caso contrario ele vai remover o 'show'   
+    c('aside').classList.remove('show');     
+        }
+    }
 
